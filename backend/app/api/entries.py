@@ -15,7 +15,8 @@ async def post_time_entry(request: TimeEntryWrite, db: Session = Depends(get_db)
         start_date = request.start_date,
         end_date = request.end_date,
         duration = duration,
-        description = request.description
+        description = request.description,
+        contract_id = request.contract_id,
     )  
 
     try:

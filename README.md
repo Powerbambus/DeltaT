@@ -17,8 +17,8 @@ periods), see your balance. Nothing else.
 
 ## Features
 
-- [ ] Time tracking (start/stop, manual entries)
-- [ ] Any number of contracts with a time range and weekly target hours
+- [x] Time tracking (manual entries)
+- [x] Any number of contracts with a time range and weekly target hours
 - [ ] Automatic balance calculation (actual vs. target, cumulative across contract boundaries)
 - [ ] Web interface (self-hosted)
 - [ ] Android app (later, via F-Droid)

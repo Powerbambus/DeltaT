@@ -1,18 +1,18 @@
-from sqlalchemy import DateTime, String, ForeignKey
+from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 
 from app.models.base import Base
 
 
-class TimeEntry(Base):
-    __tablename__ = "time_entries"
+class Contract(Base):
+    __tablename__ = "contracts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String)
     start_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     end_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    duration: Mapped[int | None] = mapped_column(nullable=True)
+    weekly_hours: Mapped[float | None] = mapped_column(nullable=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    contract_id: Mapped[int | None] = mapped_column(ForeignKey("contracts.id"), nullable=True)
-    contract: Mapped["Contract"] = relationship(back_populates="time_entries")
+    time_entries: Mapped[list["TimeEntry"]] = relationship(back_populates="contract")
