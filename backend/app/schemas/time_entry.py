@@ -20,3 +20,10 @@ class TimeEntryWrite(BaseModel):
     description: str | None = None
 
     contract_id: int | None = None
+
+class TimeEntryUpdate(BaseModel):
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    description: str | None = None
+
+    contract_id: int | None = None

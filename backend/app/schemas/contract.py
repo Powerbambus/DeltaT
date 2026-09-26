@@ -23,3 +23,13 @@ class ContractWrite(BaseModel):
     end_date: datetime | None
     weekly_hours: float | None
     description: str | None = None
+
+class ContractUpdate(BaseModel):
+    title: str | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    weekly_hours: float | None = None
+    description: str | None = None
+    
+class ContractDelete(BaseModel):
+    delete_entries: bool = False

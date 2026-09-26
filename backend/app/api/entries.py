@@ -2,10 +2,26 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.time_entry import TimeEntry
-from app.schemas.time_entry import TimeEntryRead, TimeEntryWrite
+from app.schemas.time_entry import TimeEntryRead, TimeEntryWrite, TimeEntryUpdate
 from app.db.session import get_db
 
 router = APIRouter()
+
+@router.get("/", response_model=list[TimeEntryRead])
+async def get_time_entries(db: Session = Depends(get_db)):
+    time_entries = db.query(TimeEntry).all()
+
+    return [TimeEntryRead.model_validate(entry) for entry in time_entries]
+
+@router.get("/{entry_id}", response_model=TimeEntryRead)
+async def get_time_entry(entry_id: int, db: Session = Depends(get_db)):
+    time_entry = db.query(TimeEntry).filter(
+        TimeEntry.id == entry_id
+    ).first()
+
+    if time_entry is None:
+        raise HTTPException(status_code=404, detail="TimeEntry not found")
+    return TimeEntryRead.model_validate(time_entry)
 
 @router.post("/", response_model=TimeEntryRead)
 async def post_time_entry(request: TimeEntryWrite, db: Session = Depends(get_db)):
@@ -31,18 +47,36 @@ async def post_time_entry(request: TimeEntryWrite, db: Session = Depends(get_db)
 
     return TimeEntryRead.model_validate(time_entry)
 
-@router.get("/", response_model=list[TimeEntryRead])
-async def get_time_entries(db: Session = Depends(get_db)):
-    time_entries = db.query(TimeEntry).all()
-
-    return [TimeEntryRead.model_validate(entry) for entry in time_entries]
-
-@router.get("/{entry_id}", response_model=TimeEntryRead)
-async def get_time_entry(entry_id: int, db: Session = Depends(get_db)):
-    time_entry = db.query(TimeEntry).filter(
+@router.patch("/{entry_id}", response_model=TimeEntryRead)
+async def update_time_entry(entry_id: int, request: TimeEntryUpdate, db: Session = Depends(get_db)):
+    old_entry = db.query(TimeEntry).filter(
         TimeEntry.id == entry_id
     ).first()
 
-    if time_entry is None:
-        raise HTTPException(status_code=404, detail="TimeEntry not found")
-    return TimeEntryRead.model_validate(time_entry)
+    if old_entry is None:
+        raise HTTPException(status_code=404, detail=f"No entry with {entry_id} found!")
+
+    old_entry.start_date = request.start_date if request.start_date is not None else old_entry.start_date
+    old_entry.end_date = request.end_date if request.end_date is not None else old_entry.end_date
+    if old_entry.end_date is not None:
+        old_entry.duration = int((old_entry.end_date - old_entry.start_date).total_seconds())
+
+    old_entry.description = request.description if request.description is not None else old_entry.description
+
+    db.commit()
+    db.refresh(old_entry)
+    return TimeEntryRead.model_validate(old_entry)
+
+@router.delete("/{entry_id}")
+async def delete_time_entry(entry_id: int, db: Session = Depends(get_db)):
+    entry = db.query(TimeEntry).filter(
+        TimeEntry.id == entry_id
+    ).first()
+
+    if entry is None:
+        raise HTTPException(status_code=404, detail=f"No entry with {entry_id} found!")
+
+    db.delete(entry)
+    db.commit()
+
+    return {"status": 200, "detail": f"Time entry with id {entry_id} was successfully deleted."}
