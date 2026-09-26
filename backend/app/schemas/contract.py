@@ -1,13 +1,13 @@
 from pydantic import BaseModel, ConfigDict
-from datetime import datetime
+from datetime import date
 
 class ContractRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     title: str
-    start_date: datetime
-    end_date: datetime | None
+    start_date: date
+    end_date: date | None
     weekly_hours: float | None
     description: str | None = None
 
@@ -19,15 +19,15 @@ class ContractBrief(BaseModel):
 
 class ContractWrite(BaseModel):
     title: str
-    start_date: datetime
-    end_date: datetime | None
+    start_date: date
+    end_date: date | None
     weekly_hours: float | None
     description: str | None = None
 
 class ContractUpdate(BaseModel):
     title: str | None = None
-    start_date: datetime | None = None
-    end_date: datetime | None = None
+    start_date: date | None = None
+    end_date: date | None = None
     weekly_hours: float | None = None
     description: str | None = None
     
