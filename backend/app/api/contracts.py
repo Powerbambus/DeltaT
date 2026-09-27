@@ -1,22 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_current_user
 from app.models.contract import Contract
+from app.models.user import User
 from app.schemas.contract import ContractRead, ContractWrite, ContractUpdate, ContractDelete
 from app.db.session import get_db
 
 router = APIRouter()
 
 @router.get("/", response_model=list[ContractRead])
-async def get_contracts(db: Session = Depends(get_db)):
-    contracts = db.query(Contract).all()
+async def get_contracts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    contracts = db.query(Contract).filter(Contract.user_id == current_user.id).all()
 
     return [ContractRead.model_validate(contract) for contract in contracts]
 
 @router.get("/{contract_id}", response_model=ContractRead)
-async def get_contract(contract_id: int, db: Session = Depends(get_db)):
+async def get_contract(contract_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     contract = db.query(Contract).filter(
-        Contract.id == contract_id
+        Contract.id == contract_id,
+        Contract.user_id == current_user.id,
     ).first()
 
     if contract is None:
@@ -24,14 +27,15 @@ async def get_contract(contract_id: int, db: Session = Depends(get_db)):
     return ContractRead.model_validate(contract)
 
 @router.post("/", response_model=ContractRead)
-async def post_contract(request: ContractWrite, db: Session = Depends(get_db)):
+async def post_contract(request: ContractWrite, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     contract = Contract(
         title = request.title,
         start_date = request.start_date,
         end_date = request.end_date,
         weekly_hours = request.weekly_hours,
-        description = request.description
-    )  
+        description = request.description,
+        user_id = current_user.id,
+    )
 
     try:
         db.add(contract)
@@ -46,9 +50,10 @@ async def post_contract(request: ContractWrite, db: Session = Depends(get_db)):
     return ContractRead.model_validate(contract)
 
 @router.patch("/{contract_id}", response_model=ContractRead)
-async def update_contract(contract_id: int, request: ContractUpdate, db: Session = Depends(get_db)):
+async def update_contract(contract_id: int, request: ContractUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     old_contract = db.query(Contract).filter(
-        Contract.id == contract_id
+        Contract.id == contract_id,
+        Contract.user_id == current_user.id,
     ).first()
 
     if old_contract is None:
@@ -65,9 +70,10 @@ async def update_contract(contract_id: int, request: ContractUpdate, db: Session
     return ContractRead.model_validate(old_contract)
 
 @router.delete("/{contract_id}")
-async def delete_contract(contract_id: int, delete_entries: bool = False, db: Session = Depends(get_db)):
+async def delete_contract(contract_id: int, delete_entries: bool = False, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     contract = db.query(Contract).filter(
-        Contract.id == contract_id
+        Contract.id == contract_id,
+        Contract.user_id == current_user.id,
     ).first()
 
     if contract is None:
@@ -75,7 +81,7 @@ async def delete_contract(contract_id: int, delete_entries: bool = False, db: Se
 
     for entry in contract.time_entries:
         if not delete_entries:
-            entry.contract_id = None 
+            entry.contract_id = None
         else:
             db.delete(entry)
 

@@ -16,3 +16,6 @@ class TimeEntry(Base):
 
     contract_id: Mapped[int | None] = mapped_column(ForeignKey("contracts.id"), nullable=True)
     contract: Mapped["Contract"] = relationship(back_populates="time_entries")
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="time_entries")
