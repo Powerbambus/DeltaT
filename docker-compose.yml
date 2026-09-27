@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: sqlite:///./data/deltat.db
+      JWT_SECRET: ${JWT_SECRET}
+      INITIAL_USER_EMAIL: ${INITIAL_USER_EMAIL}
+      INITIAL_USER_PASSWORD: ${INITIAL_USER_PASSWORD}
+      CORS_ORIGINS: ${FRONTEND_URL}
+    volumes:
+      - deltat-data:/app/data
+    ports:
+      - "127.0.0.1:8010:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      API_URL: ${BACKEND_URL}
+    ports:
+      - "127.0.0.1:8011:80"
+
+volumes:
+  deltat-data:
