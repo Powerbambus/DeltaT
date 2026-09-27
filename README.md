@@ -19,8 +19,8 @@ periods), see your balance. Nothing else.
 
 - [x] Time tracking (manual entries)
 - [x] Any number of contracts with a time range and weekly target hours
-- [ ] Automatic balance calculation (actual vs. target, cumulative across contract boundaries)
-- [ ] Web interface (self-hosted)
+- [x] Automatic balance calculation (actual vs. target, cumulative across contract boundaries)
+- [x] Web interface (self-hosted)
 - [ ] Android app (later, via F-Droid)
 
 ## Tech Stack
